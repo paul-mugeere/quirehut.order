@@ -1,6 +1,8 @@
 ﻿services:
   quirehut.order.api:
     image: quirehut.order.api
-    build:
-      context: .
-      dockerfile: src/quirehut.order.api/Dockerfile
+    build: 
+      context: ./src/quirehut.order.api
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"

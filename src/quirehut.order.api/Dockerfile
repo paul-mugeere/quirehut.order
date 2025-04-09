@@ -1,23 +1,14 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-USER $APP_UID
+﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS publish
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["src/quirehut.order.api/quirehut.order.api.fsproj", "src/quirehut.order.api/"]
-RUN dotnet restore "src/quirehut.order.api/quirehut.order.api.fsproj"
-COPY . .
-WORKDIR "/src/src/quirehut.order.api"
-RUN dotnet build "quirehut.order.api.fsproj" -c $BUILD_CONFIGURATION -o /app/build
+COPY ./quirehut.order.api.fsproj ./src/
+RUN dotnet restore "./src/quirehut.order.api.fsproj"
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "quirehut.order.api.fsproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+COPY . ./src
+RUN dotnet publish "src/quirehut.order.api.fsproj" -c $BUILD_CONFIGURATION -o ./publish 
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "quirehut.order.api.dll"]
