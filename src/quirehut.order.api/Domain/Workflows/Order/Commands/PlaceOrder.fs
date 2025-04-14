@@ -1,6 +1,7 @@
-namespace quirehut.order.domain.commands
+namespace quirehut.order.application.commands
 
 open Microsoft.FSharp.Core
+open quirehut.order.domain
 
 type PlaceOrderError =
     | ValidationError of ValidationError list
@@ -9,9 +10,7 @@ and ValidationError =
     { FieldName: string
       ErrorDescription: string }
 
-
-
-// type PlaceOrder = UnvalidatedOrder -> Result<PlaceOrderEvents, PlaceOrderError>
+type PlaceOrder = Command<UnvalidatedOrder>
 
 
 
