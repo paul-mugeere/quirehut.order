@@ -9,7 +9,7 @@ type OrderAcknowledgementSent ={
     EmailAddress: EmailAddress
 }
 
-type PlaceOrderEvents =
+type PlaceOrderEvent =
     | AcknowledgmentSent of OrderAcknowledgementSent
     | OrderPlaced of OrderPlaced
     | BillableOrderPlaced of BillableOrderPlaced

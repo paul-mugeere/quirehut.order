@@ -10,7 +10,7 @@ and ValidationError =
     { FieldName: string
       ErrorDescription: string }
 
-type PlaceOrder = Command<UnvalidatedOrder>
+type PlaceOrderCommand = Command<UnvalidatedOrder>
 
 
 

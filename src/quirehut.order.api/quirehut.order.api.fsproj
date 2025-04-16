@@ -10,14 +10,15 @@
             <Link>.dockerignore</Link>
         </Content>
         <Content Include="Dockerfile"/>
-        <Compile Include="Domain\Common.fs"/>
-        <Compile Include="Domain\ValueObjects.fs"/>
-        <Compile Include="Domain\CustomerInfo.fs"/>
-        <Compile Include="Domain\Order.fs"/>
-        <Compile Include="Domain\Workflows\Order\Events\OrderPlaced.fs"/>
-        <Compile Include="Domain\Workflows\Order\Commands\Command.fs"/>
-        <Compile Include="Domain\Workflows\Order\Commands\PlaceOrder.fs"/>
-        <Compile Include="Domain\Workflows\Order\OrderPlacing.fs"/>
+        <Compile Include="Domain\Order\Common.fs"/>
+        <Compile Include="Domain\Order\ValueObjects.fs"/>
+        <Compile Include="Domain\Order\CustomerInfo.fs"/>
+        <Compile Include="Domain\Order\Order.fs"/>
+        <Compile Include="Domain\Order\Commands\Command.fs"/>
+        <Compile Include="Domain\Order\Commands\PlaceOrder.fs"/>
+        <Compile Include="Domain\Order\Events\OrderPlaced.fs"/>
+        <Compile Include="Domain\Order\OrderPlacing.fs"/>
+        <Compile Include="Domain\Order\OrderPlacingInterface.fs"/>
         <Compile Include="WeatherForecast.fs"/>
         <Compile Include="Controllers/WeatherForecastController.fs"/>
         <Compile Include="Program.fs"/>
@@ -25,6 +26,7 @@
 
     <ItemGroup>
       <Folder Include="Application\" />
+      
     </ItemGroup>
 
 </Project>
