@@ -1,4 +1,4 @@
-namespace quirehut.order.application.commands
+namespace quirehut.order.domain
 
 open System
 

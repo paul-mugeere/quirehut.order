@@ -1,7 +1,5 @@
 namespace quirehut.order.domain
 
-open quirehut.order.domain
-
 type OrderPlaced = Undefined
 type BillableOrderPlaced = Undefined
 type OrderAcknowledgementSent ={

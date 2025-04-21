@@ -1,7 +1,5 @@
 namespace quirehut.order.domain
 
-open quirehut.order.application.commands
-
 type AddressValidationError = AddressValidationError of string
 type CheckedAddress = CheckedAddress of UnvalidatedAddress
 type AsyncResult<'success,'failure> = Async<Result<'success,'failure>>

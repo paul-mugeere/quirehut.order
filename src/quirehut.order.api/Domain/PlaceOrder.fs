@@ -1,7 +1,6 @@
-namespace quirehut.order.application.commands
+namespace quirehut.order.domain
 
 open Microsoft.FSharp.Core
-open quirehut.order.domain
 
 type PlaceOrderError =
     | ValidationError of ValidationError list
