@@ -1,13 +1,25 @@
 namespace quirehut.order.domain
 
+type OrderId = private OrderId of string
+module OrderId =
+    open System
+    let value orderId:OrderId = orderId
+    
+    let create orderId =
+        if String.IsNullOrEmpty orderId
+            then failwith "Order Id must not be null or empty"
+        else
+            OrderId orderId
+
+
 type UnvalidatedOrderLine =
     { Id: OrderLineId
       Quantity: UnitQuantity }
 
 type UnvalidatedOrder =
-    { OrderId: OrderId
+    { OrderId: string
       CustomerInfo: UnvalidatedCustomerInfo
-      ShippingAddress: UnvalidatedShippingAddress
+      ShippingAddress: UnvalidatedAddress
       OrderLines: UnvalidatedOrderLine list }
 
 type ValidatedOrderLine =
@@ -18,8 +30,8 @@ type ValidatedOrderLine =
 type ValidatedOrder =
     { OrderId: OrderId
       CustomerInfo: CustomerInfo
-      ShippingAddress: ShippingAddress
-      BillingAddress: BillingAddress
+      ShippingAddress: Address
+      BillingAddress: Address
       OrderLines: ValidatedOrderLine list }
 
 type PricedOrderLine =
@@ -31,8 +43,8 @@ type PricedOrderLine =
 type PricedOrder =
     { OrderId: OrderId
       CustomerId: CustomerId
-      ShippingAddress: ShippingAddress
-      BillingAddress: BillingAddress
+      ShippingAddress: Address
+      BillingAddress: Address
       OrderLines: PricedOrderLine list
       AmountToBill: BillingAmount }
 
@@ -40,3 +52,5 @@ type Order =
     | Unvalidated of UnvalidatedOrder
     | Validated
     | Priced
+
+
