@@ -19,7 +19,6 @@ type Address = {
 
 module Address=
     open common
-    
     let create addressLine1 addressLine2 city postalCode =
         let requiredAddressLine1 = ThrowErrorIf "Address Line 1 is cannot be null" String.IsNullOrEmpty addressLine1
         let requiredCity = ThrowErrorIf "City is cannot be null" String.IsNullOrEmpty city

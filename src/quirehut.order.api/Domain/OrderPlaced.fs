@@ -1,16 +1,20 @@
 namespace quirehut.order.domain
 
-type OrderPlaced = Undefined
-type BillableOrderPlaced = Undefined
+type OrderPlaced = PricedOrder
+type BillableOrderPlaced = {
+    OrderId: OrderId
+    BillingAddress: Address
+    AmountToBill: BillingAmount
+}
 type OrderAcknowledgementSent ={
     OrderId: OrderId
     EmailAddress: EmailAddress
 }
 
 type PlaceOrderEvent =
-    | AcknowledgmentSent of OrderAcknowledgementSent
     | OrderPlaced of OrderPlaced
     | BillableOrderPlaced of BillableOrderPlaced
+    | AcknowledgmentSent of OrderAcknowledgementSent
     
     
     

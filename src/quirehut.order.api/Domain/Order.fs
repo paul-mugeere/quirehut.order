@@ -1,8 +1,32 @@
 namespace quirehut.order.domain
 
+open System
+
+type Price = private Price of decimal
+module Price =
+    let value (Price price) = price
+    let create price =
+        Price price
+    let multiplyBy qty  (Price p) = create (qty * p)
+
+type BillingAmount = private BillingAmount of decimal
+module BillingAmount =
+    let value (BillingAmount amount) = amount
+    let create amount = BillingAmount amount
+    let sumPrices prices =
+        let total = prices |> List.map Price.value |> List.sum
+        create total
+    
+type ProductId = private ProductId of string
+module ProductId =
+    let value  productId:ProductId = productId
+    let create productId =
+        if String.IsNullOrEmpty(productId)
+            then failwith "Product Id cannot be null"
+        ProductId productId
+
 type OrderId = private OrderId of string
 module OrderId =
-    open System
     let value orderId:OrderId = orderId
     
     let create orderId =
@@ -12,7 +36,6 @@ module OrderId =
             OrderId orderId
 type OrderLineId = private OrderId of string
 module OrderLineId =
-    open System
     let value orderLineId:OrderLineId = orderLineId
     
     let create orderLineId =
@@ -20,7 +43,6 @@ module OrderLineId =
             then failwith "Order line Id must not be null or empty"
         else
             OrderId orderLineId
-
 
 type UnvalidatedOrderLine =
     { Id: string
@@ -47,14 +69,14 @@ type ValidatedOrder =
 
 type PricedOrderLine =
     { Id: OrderLineId
+      ProductId: ProductId
       OrderId: OrderId
       Quantity: UnitQuantity
-      Price: Price }
+      LinePrice: Price }
 
 type PricedOrder =
     { OrderId: OrderId
-      CustomerId: CustomerId
-      ShippingAddress: Address
+      CustomerInfo: CustomerInfo
       BillingAddress: Address
       OrderLines: PricedOrderLine list
       AmountToBill: BillingAmount }

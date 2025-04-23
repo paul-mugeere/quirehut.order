@@ -7,7 +7,6 @@
 
     <ItemGroup>
         <Compile Include="Domain\Common.fs" />
-        <Compile Include="Domain\ValueObjects.fs"/>
         <Compile Include="Domain\UnitQuantity.fs"/>
         <Compile Include="Domain\Address.fs" />
         <Compile Include="Domain\CustomerInfo.fs" />
