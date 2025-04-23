@@ -10,11 +10,22 @@ module OrderId =
             then failwith "Order Id must not be null or empty"
         else
             OrderId orderId
+type OrderLineId = private OrderId of string
+module OrderLineId =
+    open System
+    let value orderLineId:OrderLineId = orderLineId
+    
+    let create orderLineId =
+        if String.IsNullOrEmpty orderLineId
+            then failwith "Order line Id must not be null or empty"
+        else
+            OrderId orderLineId
 
 
 type UnvalidatedOrderLine =
-    { Id: OrderLineId
-      Quantity: UnitQuantity }
+    { Id: string
+      ProductId : string
+      Quantity: int }
 
 type UnvalidatedOrder =
     { OrderId: string
@@ -24,14 +35,14 @@ type UnvalidatedOrder =
 
 type ValidatedOrderLine =
     { Id: OrderLineId
-      OrderId: OrderId
+      ProductId: ProductId
+      OrderId: OrderId option
       Quantity: UnitQuantity }
 
 type ValidatedOrder =
     { OrderId: OrderId
       CustomerInfo: CustomerInfo
       ShippingAddress: Address
-      BillingAddress: Address
       OrderLines: ValidatedOrderLine list }
 
 type PricedOrderLine =

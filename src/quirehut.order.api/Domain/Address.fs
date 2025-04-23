@@ -1,10 +1,11 @@
 namespace quirehut.order.domain
+
+open System
       
 type UnvalidatedAddress =
     {
        AddressLine1 : string
        AddressLine2 : string option
-       AddressLine3 : string option
        City: string
        PostalCode: string
     }
@@ -12,18 +13,22 @@ type UnvalidatedAddress =
 type Address = {
        AddressLine1 : string
        AddressLine2 : string option
-       AddressLine3 : string option
        City: string
        PostalCode: string
     }
 
 module Address=
-    let create =
+    open common
+    
+    let create addressLine1 addressLine2 city postalCode =
+        let requiredAddressLine1 = ThrowErrorIf "Address Line 1 is cannot be null" String.IsNullOrEmpty addressLine1
+        let requiredCity = ThrowErrorIf "City is cannot be null" String.IsNullOrEmpty city
+        let requiredPostalCode = ThrowErrorIf "Postalcode is cannot be null" String.IsNullOrEmpty postalCode
+        
         let address={
-            AddressLine1 = failwith "validation ToDo"
-            AddressLine2 = failwith "todo"
-            AddressLine3 = failwith "todo"
-            City = failwith "todo"
-            PostalCode = failwith "todo"
+            AddressLine1 = requiredAddressLine1
+            AddressLine2 = addressLine2 
+            City = requiredCity
+            PostalCode = requiredPostalCode
         }
         address

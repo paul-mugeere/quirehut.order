@@ -23,7 +23,12 @@ type UnvalidatedCustomerInfo =
       EmailAddress: string
     }
 
-type EmailAddress = EmailAddress of string
+type EmailAddress = private EmailAddress of string
+module EmailAddress =
+    let value email:EmailAddress = email
+    let create email =
+        EmailAddress email
+    
 type CustomerInfo = {
     Fullname: Fullname
     EmailAddress: EmailAddress

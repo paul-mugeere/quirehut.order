@@ -4,7 +4,7 @@ type AddressValidationError = AddressValidationError of string
 type CheckedAddress = CheckedAddress of UnvalidatedAddress
 type AsyncResult<'success,'failure> = Async<Result<'success,'failure>>
 
-type CheckProductExists = ProductId -> bool
+type CheckProductExists = string -> bool
 type CheckAddressExists = UnvalidatedAddress -> CheckedAddress // AsyncResult<CheckedAddress, AddressValidationError>
 type ValidateOrder = CheckAddressExists -> CheckProductExists -> UnvalidatedOrder -> ValidatedOrder // AsyncResult<ValidatedOrder, ValidationError list>
 
