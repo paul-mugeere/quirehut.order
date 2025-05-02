@@ -6,15 +6,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Domain\Common.fs" />
-        <Compile Include="Domain\UnitQuantity.fs"/>
-        <Compile Include="Domain\Address.fs" />
+        <Compile Include="Domain\Result.fs"/>
         <Compile Include="Domain\CustomerInfo.fs" />
         <Compile Include="Domain\Order.fs" />
-        <Compile Include="Domain\Command.fs" />
-        <Compile Include="Domain\PlaceOrder.fs" />
-        <Compile Include="Domain\OrderPlaced.fs" />
-        <Compile Include="Domain\OrderAcknowledgement.fs" />
+        <Compile Include="Domain\Commands.fs" />
+        <Compile Include="Domain\Events.fs" />
         <Compile Include="UseCases\OrderPlacingTypes.fs" />
         <Compile Include="UseCases\OrderPlacing.fs"/>
         <Content Include="..\..\.dockerignore">

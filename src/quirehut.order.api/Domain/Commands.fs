@@ -7,3 +7,7 @@ type Command<'data> = {
     TimeStamp: DateTime
     Data: 'data
 }
+
+type PlaceOrderCommand = Command<UnvalidatedOrder>
+
+

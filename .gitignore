@@ -243,3 +243,5 @@ msbuild.binlog
 /fcs/FSharp.Compiler.Service.netstandard/*.fsi
 
 .idea
+.fake
+.vscode/settings.json

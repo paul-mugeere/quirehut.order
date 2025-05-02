@@ -2,6 +2,18 @@ namespace quirehut.order.domain
 
 open System
 
+type UnitQuantity = private UnitQuantity of int
+
+module UnitQuantity =
+        let value (UnitQuantity quantity) = quantity
+            
+        let create quantity =
+            if quantity < 1
+                then failwith "UnitQuantity can not be negative"
+            else if quantity > 100
+                then failwith "UnitQuantity can not be more than 100"
+            else (UnitQuantity quantity) 
+            
 type Price = private Price of decimal
 module Price =
     let value (Price price) = price
@@ -34,7 +46,7 @@ module OrderId =
             then failwith "Order Id must not be null or empty"
         else
             OrderId orderId
-type OrderLineId = private OrderId of string
+type OrderLineId = private OrderLineId of string
 module OrderLineId =
     let value orderLineId:OrderLineId = orderLineId
     
@@ -42,7 +54,7 @@ module OrderLineId =
         if String.IsNullOrEmpty orderLineId
             then failwith "Order line Id must not be null or empty"
         else
-            OrderId orderLineId
+            OrderLineId orderLineId
 
 type UnvalidatedOrderLine =
     { Id: string
@@ -85,5 +97,13 @@ type Order =
     | Unvalidated of UnvalidatedOrder
     | Validated
     | Priced
+    
+
+type SendResult = Sent | NotSent
+type HtmlString = HtmlString of string
+type OrderAcknowledgement = {
+    EmailAddress: EmailAddress
+    Message: HtmlString
+}
 
 
