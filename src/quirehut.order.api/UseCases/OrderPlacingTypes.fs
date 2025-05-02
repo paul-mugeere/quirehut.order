@@ -20,6 +20,6 @@ type AcknowledgeOrder =
     CreateOrderAcknowledgementMessage -> SendOrderAcknowledgement -> PricedOrder -> OrderAcknowledgementSent option
 //-> Async<OrderAcknowledgementSent option>
 
-type CreateEvents = PricedOrder -> PlaceOrderEvent list
-type CreateBillingEvent = PricedOrder -> BillableOrderPlaced option
-//type PlaceOrder = PlaceOrderCommand -> Async<Result<PlaceOrderEvent list, PlaceOrderError>>
+type CreatePlaceOrderEvents = PricedOrder -> OrderAcknowledgementSent option -> PlaceOrderEvent list
+type CreateBillableOrderPlacedEvent = PricedOrder -> BillableOrderPlaced option
+type PlaceOrderWorkflow = PlaceOrderCommand -> PlaceOrderEvent list // Async<Result<PlaceOrderEvent list, PlaceOrderError>>

@@ -1,6 +1,13 @@
 namespace quirehut.order.domain
 
-open Microsoft.FSharp.Core
+open System
+
+type Command<'data> = {
+    Userid: string
+    TimeStamp: DateTime
+    Data: 'data
+}
+
 
 type PlaceOrderError =
     | ValidationError of ValidationError list
@@ -10,6 +17,5 @@ and ValidationError =
       ErrorDescription: string }
 
 type PlaceOrderCommand = Command<UnvalidatedOrder>
-
 
 

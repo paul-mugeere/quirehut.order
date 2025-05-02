@@ -1,10 +1,7 @@
 namespace quirehut.order.domain
 
-open System
-open System.Collections.Generic
 open Microsoft.FSharp.Collections
 open quirehut.order.domain
-open quirehut.order.domain.Price
 open quirehut.order.domain.common
 
 module PlaceOrder =
@@ -30,14 +27,14 @@ module PlaceOrder =
 
         address
 
-    let toProductId checkProductExists productId =
-        let error = "Product of Id{productId} does not exist"
+    let checkProductIdExists checkProductExists productId =
+        let error = $"Product of Id: {productId} does not exist"        
         let checkProduct = ThrowErrorIf error checkProductExists productId
         checkProduct |> ProductId.create
 
-    let toValidatedOrderLine checkProductExists (unvalidatedOrderLine: UnvalidatedOrderLine) : ValidatedOrderLine =
+    let validateOrderLine checkProductExists (unvalidatedOrderLine: UnvalidatedOrderLine) : ValidatedOrderLine =
         let orderLineId = unvalidatedOrderLine.Id |> OrderLineId.create
-        let productId = unvalidatedOrderLine.ProductId |> toProductId checkProductExists
+        let productId = unvalidatedOrderLine.ProductId |> checkProductIdExists checkProductExists
         let quantity = unvalidatedOrderLine.Quantity |> UnitQuantity.create
 
         { Id = orderLineId
@@ -52,16 +49,15 @@ module PlaceOrder =
 
             let shippingAddress =
                 unvalidatedOrder.ShippingAddress |> checkAddressExists |> toAddress
-
+                                
             let orderLines =
                 unvalidatedOrder.OrderLines
-                |> List.map (toValidatedOrderLine checkProductExists)
+                |> List.map (validateOrderLine checkProductExists)
 
             { OrderId = orderId
               CustomerInfo = customerInfo
               ShippingAddress = shippingAddress
               OrderLines = orderLines }
-
 
     let toPricedOrderLine (getProductPrice: GetProductPrice) (orderLine: ValidatedOrderLine) : PricedOrderLine =
         let productPrice = orderLine.ProductId |> getProductPrice
@@ -107,16 +103,68 @@ module PlaceOrder =
                 Some event
             | NotSent -> None
 
-    let createBillable: CreateBillingEvent =
+    let createBillableOrderPlacedEvent: CreateBillableOrderPlacedEvent =
         fun pricedOrder ->
             let billingAmount = pricedOrder.AmountToBill |> BillingAmount.value
 
             if billingAmount > 0M then
-                let order =
+                let orderPlaced =
                     { OrderId = pricedOrder.OrderId
                       AmountToBill = pricedOrder.AmountToBill
                       BillingAddress = pricedOrder.BillingAddress }
 
-                Some order
+                Some orderPlaced
             else
                 None
+
+    let createPlaceOrderEvents: CreatePlaceOrderEvents =
+        fun pricedOrder acknowledgementEvent ->
+            let asOptionalSingleton opt =
+                match opt with
+                | Some x -> [ x ]
+                | None -> []
+
+            let orderPlacedEvents = pricedOrder |> PlaceOrderEvent.OrderPlaced |> List.singleton
+
+            let acknowledgementSentEvents =
+                acknowledgementEvent
+                |> Option.map PlaceOrderEvent.AcknowledgmentSent
+                |> asOptionalSingleton
+            
+            let billableOrderPlacedEvents =
+                pricedOrder
+                |> createBillableOrderPlacedEvent
+                |> Option.map PlaceOrderEvent.BillableOrderPlaced
+                |> asOptionalSingleton
+
+            [ yield! orderPlacedEvents
+              yield! acknowledgementSentEvents
+              yield! billableOrderPlacedEvents ]
+
+
+    let placeOrder
+        checkAddressExists
+        checkProductExists
+        getProductPrice
+        createAcknowledgementMessage
+        sendOrderAcknowledgement
+        : PlaceOrderWorkflow =
+        fun placeOrderCommand ->
+            
+            let unValidatedOrder = placeOrderCommand.Data
+            
+            let validatedOrder =
+                unValidatedOrder
+                |> validateOrder checkAddressExists checkProductExists
+
+            let pricedOrder =
+                 validatedOrder
+                 |> priceOrder getProductPrice
+
+            let orderAcknowledgementSentEvent =
+                pricedOrder
+                |> acknowledgeOrder createAcknowledgementMessage sendOrderAcknowledgement
+
+            let events = createPlaceOrderEvents pricedOrder orderAcknowledgementSentEvent
+
+            events

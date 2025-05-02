@@ -2,6 +2,18 @@ namespace quirehut.order.domain
 
 open System
 
+type UnitQuantity = private UnitQuantity of int
+
+module UnitQuantity =
+        let value (UnitQuantity quantity) = quantity
+            
+        let create quantity =
+            if quantity < 1
+                then failwith "UnitQuantity can not be negative"
+            else if quantity > 100
+                then failwith "UnitQuantity can not be more than 100"
+            else (UnitQuantity quantity)
+            
 type Price = private Price of decimal
 module Price =
     let value (Price price) = price
@@ -85,5 +97,13 @@ type Order =
     | Unvalidated of UnvalidatedOrder
     | Validated
     | Priced
+    
+
+type SendResult = Sent | NotSent
+type HtmlString = HtmlString of string
+type OrderAcknowledgement = {
+    EmailAddress: EmailAddress
+    Message: HtmlString
+}
 
 
