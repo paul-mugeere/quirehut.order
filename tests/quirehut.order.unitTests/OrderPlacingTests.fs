@@ -6,6 +6,7 @@ open quirehut.order.domain
 open quirehut.order.domain.PlaceOrder
 
 
+
 [<Fact>]
 let ``Given product does not exists, validateOrderLines should return ValidationError`` () =
     let unvalidatedLine = {
@@ -94,4 +95,25 @@ let ``Given valid order, placeOrder should succeed`` () =
     
     match result with
     | Ok events -> Assert.True(events |> List.exists (fun e -> e.IsOrderPlaced))
-    | Error e -> Assert.Fail("Expected successful placement")   
+    | Error e -> Assert.Fail("Expected successful placement")
+ 
+ 
+[<Fact>]
+let ``Given timeout, validateAddress should return ValidationError`` () =
+    
+    let unvalidatedAddress: UnvalidatedAddress = {
+        AddressLine1 = "test-address-line-1"
+        AddressLine2 = "test-address-line-2" |> option.Some
+        City = "test-city"
+        PostalCode = "test-postal-code"
+    }
+    
+    let checkAddressExists _ = raise (TimeoutException("Address validation service timed out"))
+    
+    let result = checkAddressExistsAdapted checkAddressExists unvalidatedAddress
+    
+    match result with
+    | Error e -> 
+        Assert.True(e.ServiceInfo.Name = "Address Validation Service" && e.Exception.Message = "Address validation service timed out")
+
+    | Ok _ -> Assert.Fail"Timeout error expected"

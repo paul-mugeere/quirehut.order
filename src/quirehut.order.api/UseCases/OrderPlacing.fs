@@ -1,19 +1,28 @@
 namespace quirehut.order.domain
 
+open System
 open Microsoft.AspNetCore.Components.Forms
 open Microsoft.FSharp.Collections
 open quirehut.order.domain
+open quirehut.order.domain.ResultBuilder
 
 module PlaceOrder =
 
-    let toCustomerInfo (unvalidatedCustomerInfo: UnvalidatedCustomerInfo) : CustomerInfo =
-        let fullname =
-            Fullname.create unvalidatedCustomerInfo.Firstname unvalidatedCustomerInfo.Lastname
+    let toCustomerInfo (unvalidatedCustomerInfo: UnvalidatedCustomerInfo) : Result<CustomerInfo, ValidationError> =
+        try
+            let fullname =
+                Fullname.create unvalidatedCustomerInfo.Firstname unvalidatedCustomerInfo.Lastname
 
-        let email = unvalidatedCustomerInfo.EmailAddress |> EmailAddress.create
+            let email = unvalidatedCustomerInfo.EmailAddress |> EmailAddress.create
 
-        { Fullname = fullname
-          EmailAddress = email }
+            let customerInfo =
+                { Fullname = fullname
+                  EmailAddress = email }
+
+            Ok customerInfo
+        with ex ->
+            ValidationError.create "CustomerInfo" ex.Message |> Error
+
 
     let toAddress (unvalidatedAddress: CheckedAddress) : Address =
         let (CheckedAddress checkedAddress) = unvalidatedAddress
@@ -26,7 +35,7 @@ module PlaceOrder =
                 checkedAddress.PostalCode
 
         address
-   
+
     let toValidQuantity qty =
         try
             qty |> UnitQuantity.create |> Ok
@@ -38,7 +47,7 @@ module PlaceOrder =
             orderLineId |> OrderLineId.create |> Ok
         with ex ->
             ValidationError.create "OrderLine" ex.Message |> Error
-    
+
     let checkProductIdExists checkProductExists productId =
         let error = $"Product of Id: {productId} does not exist"
 
@@ -52,23 +61,17 @@ module PlaceOrder =
         (unvalidatedOrderLine: UnvalidatedOrderLine)
         : Result<ValidatedOrderLine, ValidationError> =
 
-        let productId =
-            unvalidatedOrderLine.ProductId
-            |> checkProductIdExists checkProductExists
+        result {
+            let! productId = unvalidatedOrderLine.ProductId |> checkProductIdExists checkProductExists
+            and! quantity = unvalidatedOrderLine.Quantity |> toValidQuantity
+            and! orderLineId = unvalidatedOrderLine.Id |> toValidOrderLineId
 
-        let quantity = unvalidatedOrderLine.Quantity |> toValidQuantity
-        let orderLineId = unvalidatedOrderLine.Id |> toValidOrderLineId
-
-        match productId, quantity, orderLineId with
-        | Ok productId, Ok quantity, Ok orderLineId ->
-            { Id = orderLineId
-              ProductId = productId
-              OrderId = orderId |> Some
-              Quantity = quantity }
-            |> Ok
-        | Error e, _, _ -> Error e
-        | _, Error e, _ -> Error e
-        | _, _, Error e -> Error e
+            return
+                { Id = orderLineId
+                  ProductId = productId
+                  OrderId = orderId |> Some
+                  Quantity = quantity }
+        }
 
     let validateOrderLines
         (orderId: OrderId)
@@ -101,38 +104,57 @@ module PlaceOrder =
                 | Ok line -> Some line
                 | _ -> None)
             |> Ok
-  
+
+
+    let checkAddressExistsAdapted
+        (checkAddressExists: CheckAddressExists)
+        (unvalidatedAddress: UnvalidatedAddress)
+        : Result<Address, RemoteServiceError> =
+
+        let serviceInfo =
+            { Name = "Address Validation Service"
+              Endpoint = Uri("https://address-validation-service.com/api/validate") }
+
+        try
+            (checkAddressExists unvalidatedAddress) |> toAddress |> Ok
+        with :? TimeoutException as ex ->
+            Error
+                { ServiceInfo = serviceInfo
+                  Exception = ex }
+
+
     let validateOrder: ValidateOrder =
         fun checkAddressExists checkProductExists unvalidatedOrder ->
-            let orderId = unvalidatedOrder.OrderId |> OrderId.create           
-            
-            let orderLines =
-                unvalidatedOrder.OrderLines
-                |> validateOrderLines orderId checkProductExists
+            result {
+                let orderId = unvalidatedOrder.OrderId |> OrderId.create
 
-            let customerInfoResult = unvalidatedOrder.CustomerInfo |> toCustomerInfo |> Ok
+                let! orderLines =
+                    unvalidatedOrder.OrderLines
+                    |> validateOrderLines orderId checkProductExists
+                    |> Result.mapError PlaceOrderError.ValidationError
 
-            let shippingAddressResult =
-                unvalidatedOrder.ShippingAddress |> checkAddressExists |> toAddress |> Ok
-            let orderIdResult = orderId |> Ok
+                let! customerInfoResult =
+                    unvalidatedOrder.CustomerInfo
+                    |> toCustomerInfo
+                    |> Result.mapError PlaceOrderError.ValidationError
 
-            match orderIdResult, customerInfoResult, shippingAddressResult, orderLines with
-            | Ok orderId, Ok customerInfo, Ok shippingAddress, Ok orderLines ->
-                { OrderId = orderId
-                  CustomerInfo = customerInfo
-                  ShippingAddress = shippingAddress
-                  OrderLines = orderLines }
-                |> Ok
-            | Error e, _, _, _ -> Error e
-            | _, Error e, _, _ -> Error e
-            | _, _, Error e, _ -> Error e
-            | _, _, _, Error e -> Error e
-   
+                let! shippingAddressResult =
+                    unvalidatedOrder.ShippingAddress
+                    |> checkAddressExistsAdapted checkAddressExists
+                    |> Result.mapError PlaceOrderError.RemoteServiceError
+
+                return
+                    { OrderId = orderId
+                      CustomerInfo = customerInfoResult
+                      ShippingAddress = shippingAddressResult
+                      OrderLines = orderLines }
+            }
+
     let pricedOrderLine (getProductPrice: GetProductPrice) (orderLine: ValidatedOrderLine) : PricedOrderLine =
         let productPrice = orderLine.ProductId |> getProductPrice
         let quantity = orderLine.Quantity |> UnitQuantity.value
         let linePrice = Price.multiplyBy quantity productPrice
-    
+
         { Id = orderLine.Id
           ProductId = orderLine.ProductId
           OrderId = orderLine.OrderId.Value
@@ -143,48 +165,49 @@ module PlaceOrder =
         fun getProductPrice validatedOrder ->
             let pricedOrderLines =
                 validatedOrder.OrderLines |> List.map (pricedOrderLine getProductPrice)
-    
+
             let amountToBill =
-                pricedOrderLines |> List.map ( fun x-> x.LinePrice) |> BillingAmount.sumPrices
-    
+                pricedOrderLines |> List.map (fun x -> x.LinePrice) |> BillingAmount.sumPrices
+
             { OrderId = validatedOrder.OrderId
               CustomerInfo = validatedOrder.CustomerInfo
               BillingAddress = validatedOrder.ShippingAddress
               OrderLines = pricedOrderLines
-              AmountToBill = amountToBill } |> Ok
+              AmountToBill = amountToBill }
+            |> Ok
 
     let acknowledgeOrder: AcknowledgeOrder =
         fun createOrderAcknowledgementMessage sendOrderAcknowledgement pricedOrder ->
             let letter = createOrderAcknowledgementMessage pricedOrder
-    
+
             let acknowledgement =
                 { EmailAddress = pricedOrder.CustomerInfo.EmailAddress
                   Message = letter }
-    
+
             let sendAcknowledgementResult = sendOrderAcknowledgement acknowledgement
-    
+
             match sendAcknowledgementResult with
             | Sent ->
                 let event =
                     { OrderId = pricedOrder.OrderId
                       EmailAddress = pricedOrder.CustomerInfo.EmailAddress }
-    
+
                 Some event
             | NotSent -> None
 
     let createBillableOrderPlacedEvent: CreateBillableOrderPlacedEvent =
         fun pricedOrder ->
             let billingAmount = pricedOrder.AmountToBill |> BillingAmount.value
-    
+
             if billingAmount > 0M then
                 let orderPlaced =
                     { OrderId = pricedOrder.OrderId
                       AmountToBill = pricedOrder.AmountToBill
                       BillingAddress = pricedOrder.BillingAddress }
-    
+
                 Some orderPlaced
             else
-                None 
+                None
 
     let createPlaceOrderEvents: CreatePlaceOrderEvents =
         fun pricedOrder acknowledgementEvent ->
@@ -192,25 +215,25 @@ module PlaceOrder =
                 match opt with
                 | Some x -> [ x ]
                 | None -> []
-    
+
             let orderPlacedEvents = pricedOrder |> PlaceOrderEvent.OrderPlaced |> List.singleton
-    
+
             let acknowledgementSentEvents =
                 acknowledgementEvent
                 |> Option.map PlaceOrderEvent.AcknowledgmentSent
                 |> asOptionalSingleton
-    
+
             let billableOrderPlacedEvents =
                 pricedOrder
                 |> createBillableOrderPlacedEvent
                 |> Option.map PlaceOrderEvent.BillableOrderPlaced
                 |> asOptionalSingleton
-    
+
             [ yield! orderPlacedEvents
               yield! acknowledgementSentEvents
               yield! billableOrderPlacedEvents ]
-    
-     
+
+
     let placeOrder
         checkAddressExists
         checkProductExists
@@ -219,32 +242,35 @@ module PlaceOrder =
         sendOrderAcknowledgement
         : PlaceOrderWorkflow =
         fun placeOrderCommand ->
-    
+
             let unValidatedOrder = placeOrderCommand.Data
-                       
+
             let validate unvalidatedOrder =
                 unvalidatedOrder
                 |> Result.bind (validateOrder checkAddressExists checkProductExists)
-                |> Result.mapError PlaceOrderError.ValidationError
-                
+
             let price validatedOrder =
                 validatedOrder
                 |> Result.bind (priceOrder getProductPrice)
                 |> Result.mapError PlaceOrderError.PricingError
-            
+
             let placeOrder input =
                 input
                 |> validate
                 |> Result.bind (fun order -> price (Ok order))
-                |> Result.map (fun order -> 
-                    let event = acknowledgeOrder createAcknowledgementMessage sendOrderAcknowledgement order
-                    createPlaceOrderEvents order event                    
-                )
-            
+                |> Result.map (fun order ->
+                    let event =
+                        acknowledgeOrder createAcknowledgementMessage sendOrderAcknowledgement order
+
+                    createPlaceOrderEvents order event)
+
             let orderPlaced =
-                unValidatedOrder |> Ok
-                |> placeOrder 
+                unValidatedOrder
+                |> Ok
+                |> placeOrder
                 |> Result.mapError (function
                     | ValidationError e -> PlaceOrderError.ValidationError e
-                    | PricingError e -> PlaceOrderError.PricingError e)
+                    | PricingError e -> PlaceOrderError.PricingError e
+                    | RemoteServiceError e -> PlaceOrderError.RemoteServiceError e)
+
             orderPlaced
