@@ -9,6 +9,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "quirehut.order.api", "src\q
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "quirehut.order.unitTests", "tests\quirehut.order.unitTests\quirehut.order.unitTests.fsproj", "{D6CFA034-B602-45A1-BB9C-793EED996637}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "quirehut.order.integrationTests", "tests\quirehut.order.integrationTests\quirehut.order.integrationTests.fsproj", "{AFA155D6-AEFD-486D-926B-58D6A0296CD6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{D6CFA034-B602-45A1-BB9C-793EED996637}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6CFA034-B602-45A1-BB9C-793EED996637}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6CFA034-B602-45A1-BB9C-793EED996637}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFA155D6-AEFD-486D-926B-58D6A0296CD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFA155D6-AEFD-486D-926B-58D6A0296CD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFA155D6-AEFD-486D-926B-58D6A0296CD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFA155D6-AEFD-486D-926B-58D6A0296CD6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

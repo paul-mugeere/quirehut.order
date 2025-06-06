@@ -17,10 +17,9 @@
             <Link>.dockerignore</Link>
         </Content>
         <Content Include="Dockerfile"/>
-        <Compile Include="WeatherForecast.fs"/>
-        <Compile Include="Controllers/WeatherForecastController.fs"/>
+        <Compile Include="PlaceOrderRequests.fs"/>
+        <Compile Include="HttpHandlers.fs" />
         <Compile Include="Program.fs"/>
     </ItemGroup>
-
 
 </Project>

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Customer Order",
+    "type": "object",
+    "properties": {
+        "orderId": {
+            "type": "string",
+            "description": "Unique identifier for the order"
+        },
+        "customerId": {
+            "type": "string",
+            "description": "Identifier for the customer placing the order"
+        },
+        "items": {
+            "type": "array",
+            "items": {
+                "$ref": "./orderItem.schema.json"
+            },
+            "description": "List of items in the order"
+        },
+        "totalAmount": {
+            "type": "number",
+            "format": "float",
+            "description": "Total amount for the order"
+        },
+        "status": {
+            "type": "string",
+            "description": "Current status of the order"
+        }
+    }
+}

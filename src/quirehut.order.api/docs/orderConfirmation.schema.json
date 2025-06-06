@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Order confirmation",
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    }
+  }
+}
