@@ -36,6 +36,7 @@
     "$defs": {
         "orderLine": {
             "type": "object",
+            "title": " Order Line",
             "description": "An item in the order",
             "properties": {
                 "productId": {
