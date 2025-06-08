@@ -3,11 +3,30 @@
   "title": "Place Order Request",
   "type": "object",
   "properties": {
-    "customerId": {
-      "type": "string",
-      "description": "Identifier of the customer placing the order"
+    "customerInfo": {
+      "type": "object",
+        "title": "Customer Information",
+      "description": "Information about the customer placing the order",
+      "properties": {
+        "Fullname": {
+          "type": "string",
+          "description": "Full name of the customer"
+        },
+        "EmailAddress": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address of the customer"
+        }
+      },
+      "required": ["Fullname", "EmailAddress"]
     },
-    "items": {
+    "BillingAddress": {
+      "$ref": "#/$defs/address"
+        },
+    "ShippingAddress": {
+      "$ref": "#/$defs/address"
+    },
+    "OrderLines": {
       "type": "array",
       "description": "List of items to be ordered",
       "items": {
@@ -16,30 +35,51 @@
     }
   },
   "required": [
-    "customerId",
-    "items"
+    "customerInfo",
+    "BillingAddress",
+    "ShippingAddress",
+    "OrderLines"
   ],
   "$defs": {
     "placeOrderItem": {
+      "title": "Order Line Request",
+      "description": "An item in the order",
       "type": "object",
-      "description": "An item to be included in the new order",
       "properties": {
-        "productId": {
+        "ProductId": {
           "type": "string",
           "description": "Unique identifier for the product to be ordered"
         },
-        "quantity": {
+        "Quantity": {
           "type": "integer",
+          "minimum": 1,
           "description": "Number of units of the product to be ordered"
-        },
-        "pricePerItem": {
-          "type": "number",
-          "format": "float",
-          "description": "Price per unit of the product at the time of order"
         }
-      }
-
+      },
+      "required": ["ProductId", "Quantity"]
+    },
+    "address": {
+      "title": "Address",
+      "type": "object",
+      "properties": {
+        "AddressLine1": {
+          "type": "string",
+          "description": "Primary address line"
+        },
+        "AddressLine2": {
+          "type": ["string", "null"],
+          "description": "Optional secondary address line"
+        },
+        "City": {
+          "type": "string",
+          "description": "City name"
+        },
+        "PostalCode": {
+          "type": "string",
+          "description": "Postal or ZIP code"
+        }
+      },
+      "required": ["AddressLine1", "City", "PostalCode"]
     }
   }
-}
 }
