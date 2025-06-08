@@ -28,7 +28,7 @@
                   "schema": {
                     "type": "array",
                     "items": {
-                      "$ref": "./order.schema.json"
+                      "$ref": "./customerOrder.schema.json"
                     }
                   }
                 }
@@ -46,7 +46,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "./orderRequest.schema.json"
+                "$ref": "./placeOrderRequest.schema.json"
               }
             }
           }

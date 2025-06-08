@@ -12,9 +12,6 @@ type AddressInfo = {
     PostalCode: string
 }
 
-type ShippingAddressInfo = ShippingAddressInfo of AddressInfo
-type BillingAddressInfo = BillingAddressInfo of AddressInfo
-
 type CustomerInfo = {
     Fullname: string
     EmailAddress: string
@@ -22,12 +19,26 @@ type CustomerInfo = {
 
 type PlaceOrderRequest ={
     customerInfo: CustomerInfo
-    BillingAddress: BillingAddressInfo
-    ShippingAddress: ShippingAddressInfo
+    BillingAddress: AddressInfo
+    ShippingAddress: AddressInfo
     OrderLines: OrderLineInfo list
 }
 
 type OrderConfirmation = {
     OrderId: string
     Message: string
+}
+
+type CustomerOrderLine = {
+    ProductId: string
+    ProductName: string
+    Quantity: int
+}
+
+type CustomerOrder = {
+    OrderId: string
+    CustomerId: string
+    OrderDate: System.DateTime
+    ShippingAddress: AddressInfo
+    OrderLines: CustomerOrderLine list
 }

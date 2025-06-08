@@ -12,6 +12,9 @@ module Program =
     let exitCode = 0    
     let createWebApplicationBuilder (args:string[]) =
         let builder = WebApplication.CreateBuilder(args)
+        builder.Services.ConfigureHttpJsonOptions(fun options ->
+            options.SerializerOptions.PropertyNamingPolicy <- null
+        ) |> ignore
         builder
     
     let createWebApplication (builder:WebApplicationBuilder) =
@@ -19,8 +22,9 @@ module Program =
         let app = builder.Build()
         app.UseHttpsRedirection()
         app.UseAuthorization()
-        app.MapGet("health", Func<IResult>(fun () -> Results.Ok("Healthy"))) |> ignore
+        app.MapGet("healthz", Func<IResult>(fun () -> Results.Ok("Healthzing..."))) |> ignore
         app.MapGet("api/orders/{customerId}", Func<string, IResult>(fun (customerId) -> getOrders app.Logger customerId)) |> ignore
+        app.MapPost("api/orders", Func<PlaceOrderRequest, IResult>(fun (request) -> placeOrder app.Logger request)) |> ignore
         app
     
 

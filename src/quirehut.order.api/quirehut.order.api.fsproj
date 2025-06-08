@@ -6,6 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FSharp.SystemTextJson" Version="1.2.3" />
+    </ItemGroup>
+
+    <ItemGroup>
         <Compile Include="Domain\Result.fs"/>
         <Compile Include="Domain\CustomerInfo.fs" />
         <Compile Include="Domain\Order.fs" />
@@ -20,6 +24,13 @@
         <Compile Include="PlaceOrderRequests.fs"/>
         <Compile Include="HttpHandlers.fs" />
         <Compile Include="Program.fs"/>
+        <Content Include="docs\**\*.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
+
+    <PropertyGroup>
+        <EnableDefaultContentItems>false</EnableDefaultContentItems>
+    </PropertyGroup>
 
 </Project>

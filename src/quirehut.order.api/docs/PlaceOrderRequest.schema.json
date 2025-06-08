@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Place Order Request",
+  "type": "object",
+  "properties": {
+    "customerId": {
+      "type": "string",
+      "description": "Identifier of the customer placing the order"
+    },
+    "items": {
+      "type": "array",
+      "description": "List of items to be ordered",
+      "items": {
+        "$ref": "#/$defs/placeOrderItem"
+      }
+    }
+  },
+  "required": [
+    "customerId",
+    "items"
+  ],
+  "$defs": {
+    "placeOrderItem": {
+      "type": "object",
+      "description": "An item to be included in the new order",
+      "properties": {
+        "productId": {
+          "type": "string",
+          "description": "Unique identifier for the product to be ordered"
+        },
+        "quantity": {
+          "type": "integer",
+          "description": "Number of units of the product to be ordered"
+        },
+        "pricePerItem": {
+          "type": "number",
+          "format": "float",
+          "description": "Price per unit of the product at the time of order"
+        }
+      }
+
+    }
+  }
+}
+}
